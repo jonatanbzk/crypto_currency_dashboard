@@ -13,12 +13,10 @@ class CoinController extends Controller
     public function index()
     {
 
-        $response = Http::get('https://api.coingecko.com/api/v3/simple/price?ids=grin&vs_currencies=eur');
-        $rep = $response->json();
         $coins = Coin::all();
-        $prices = Coin::find(1)->prices;
+     //   $prices = Coin::find(1)->prices;
 
-        return view('home')->with(compact('coins','rep', 'prices'));
+        return view('home')->with(compact('coins'));  // , 'prices'
     }
 
 }

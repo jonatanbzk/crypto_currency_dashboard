@@ -50,7 +50,7 @@ class coinFill extends Command
         $coin_id = $coin[0]['id'];
 
 
-        $refTime = time() - (591 * 24 * 3600);
+        $refTime = time() - (10 * 24 * 3600);
         while ($refTime < time() - 3600) {
             for ($i = 0; $i < 100; $i++) {
                 if ($refTime < time() - 3600) {
