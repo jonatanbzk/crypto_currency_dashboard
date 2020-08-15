@@ -44,11 +44,13 @@ class Kernel extends ConsoleKernel
                                         . $coin->coin_name . '/history?date=' .
                                         $dateAPI . '&localization=false');
                                     $rep = $response->json();
+                                    $price = $coinPriceHistory[0]['price'] ==
+                                    0 ? 0 : $coinPriceHistory[0]['price'];
                                     $coinPriceHistory[] = ['date_at' =>
                                         $dateSQL,
                                         'price' => round($rep['market_data']['current_price']['eur'], 2)];
                                     DB::insert('insert into prices (coin_id, price, date_at, created_at, updated_at) values (?, ?, ?, ?, ?)',
-                                    [$coin->id, $coinPriceHistory[0]['price'],
+                                    [$coin->id, $price,
                                         $coinPriceHistory[0]['date_at'],
                                         $dateSQL, $dateSQL]);
                                 $refTime = $refTime + (24 * 3600);

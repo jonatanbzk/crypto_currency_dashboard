@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-
-    <div>
+<div id="blocPage">
+    <div id="coinsTab">
         <table class="table table-inverse">
             <thead>
             <tr>
@@ -25,13 +25,15 @@
         </table>
     </div>
 
+    <div id="line_top_x"></div>
+
     @foreach($coinsName as $coin)
         @if($coin->id !== 1)
-        <input type='button' value='{{$coin->coin_name}}'
-               id='fetch_{{$coin->id}}'>
+            <input type='button' value='{{$coin->coin_name}}'
+                   id='fetch_{{$coin->id}}'>
         @endif
     @endforeach
-    <div id="line_top_x"></div>
+</div>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
         var data;
