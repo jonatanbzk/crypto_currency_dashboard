@@ -43,12 +43,12 @@ class coinAdd extends Command
         if (count($arguments) !== 2) {
             return $this->error('coin:add command needs coin name & coin abbreviation as parameter. ex: coin:add bitcoin btc');
         }
-        $count = Coin::where('name', $arguments[0])->count();
+        $count = Coin::where('coin_name', $arguments[0])->count();
         if ($count > 0) {
             return $this->error($arguments[0] . ' is already in the database.');
         }
-        DB::insert('insert into coins (name, abbreviation) values (?, ?)',
-            [$arguments[0], $arguments[1]]);
+        DB::insert('insert into coins (coin_name, abbreviation, history_fill) values (?, ?, ?)',
+            [$arguments[0], $arguments[1], 0]);
 
         $this->info($arguments[0] . ' have been added to the database.');
     }

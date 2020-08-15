@@ -17,7 +17,7 @@ class CreatePricesTable extends Migration
             $table->id();
             $table->integer('coin_id');
             $table->float('price');
-            $table->dateTime('date');
+            $table->dateTime('date_at');
             $table->timestamps();
         });
     }

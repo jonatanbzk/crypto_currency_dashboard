@@ -2,88 +2,112 @@
 
 @section('content')
 
-    <div id="line_top_x"></div>
-
     <div>
         <table class="table table-inverse">
             <thead>
             <tr>
-                <th>ID</th>
-                <th>Name</th>
+                <th>Coin</th>
+                <th></th>
                 <th>Price</th>
+                <th>24h</th>
             </tr>
             </thead>
-            <tbody id="coins-list" name="coins-list">
-            @foreach ($coins as $data)
-                <tr id="todo{{$data->id}}">
-                    <td>{{$data->id}}</td>
-                    <td>{{$data->name}} [{{$data->abbreviation}}]</td>
-                    <td>
-                        @foreach ($data->prices as $price)
-                            {{$price->date}} :
-                            {{$price->price}} <br>
-                        @endforeach
-                    </td>
-                </tr>
+            <tbody id="bodyData">
+            @foreach($coinsName as $coin)
+                    <tr>
+                        <td>{{$coin->coin_name}}</td>
+                        <td>{{$coin->abbreviation}}</td>
+                        <td>{{$coinsPrice[$loop->index][0]}}</td>
+                        <td>{{$coinsPrice[$loop->index][1]}}</td>
+                    </tr>
             @endforeach
             </tbody>
         </table>
-        <br>
     </div>
 
+    @foreach($coinsName as $coin)
+        @if($coin->id !== 1)
+        <input type='button' value='{{$coin->coin_name}}'
+               id='fetch_{{$coin->id}}'>
+        @endif
+    @endforeach
+    <div id="line_top_x"></div>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
+        var data;
+        var chart;
+        var options;
         google.charts.load('current', {'packages':['line']});
         google.charts.setOnLoadCallback(drawChart);
-
+        var coinsGraphDisplay = [0, 1]; // 0 == date 1 == btc
         function drawChart() {
-
-            /*
-                ['Product Id', 'Sales', 'Quantity'],
-
-                @php
-            /*
-                    foreach($products as $product) {
-                        echo "['".$product->id."', ".$product->sales.", ".$product->quantity."],";
-                    }
- */
-                @endphp
-            */
-
-
-            var data = new google.visualization.DataTable();
-            data.addColumn('string', 'Date');
-            data.addColumn('number', 'BTC');
-
-            data.addRows([
-                    @php
-                        foreach ($coins as $data) {
-                            foreach($data->prices as $price) {
-                                //$day = date('', strtotime($price->date));
-                                echo "['".$price->date."', ".$price->price."],";
-                            }
-                        }
-                    @endphp
-
-            ]);
-            var options = {
-                chart: {
-                    title: 'Box Office Earnings in First Two Weeks of Opening',
-                    subtitle: 'in millions of dollars (USD)'
-                },
-                width: 900,
-                height: 500,
-                axes: {
-                    x: {
-                        0: {side: 'top'}
-                    }
+        data = new google.visualization.DataTable();
+        data.addColumn('string', 'Date');
+        data.addColumn('number', 'Bitcoin');
+        data.addRows([
+            @foreach($bitcoin as $btc)
+                @foreach($btc->prices as $price)
+                    ['{{date('j-F', strtotime($price->date_at))}}',
+                    {{$price->price}}],
+                @endforeach
+            @endforeach
+        ]);
+        options = {
+            width: 900,
+            height: 500,
+            axes: {
+                x: {
+                    0: {side: 'top'}
                 }
-            };
-            var chart = new google.charts.Line(document.getElementById('line_top_x'));
-
-            chart.draw(data, google.charts.Line.convertOptions(options));
+            }
+        };
+        chart = new google.charts.Line(document.getElementById('line_top_x'));
+        chart.draw(data, google.charts.Line.convertOptions(options));
         }
+
+        $(document).ready(function() {
+            @foreach($coinsName as $coin)
+            $('#fetch_{{$coin->id}}').click(function () {
+                fetchRecords({{$coin->id}});
+            });
+            @endforeach
+
+            function fetchRecords(id){
+                // id == bitcoin, stay in graph
+                if(id === 1) {
+                    return;
+                }
+                // if the coin is already in the graph, remove it
+                if($.inArray(id, coinsGraphDisplay) !== -1) {
+                    data.removeColumn($.inArray(id, coinsGraphDisplay));
+                    chart.draw(data, google.charts.Line.convertOptions(options));
+                    coinsGraphDisplay.splice(
+                        $.inArray(id, coinsGraphDisplay), 1);
+                } // if the coin is not in the graph, add it
+                else {
+                    $.ajax({
+                        url: "/coinData/getCoinData/" + id,
+                        type: "POST",
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
+                        cache: false,
+                        dataType: 'json',
+                        success: function (dataResult) {
+                            var resultData = dataResult.data;
+                            data.addColumn('number',
+                                resultData[0]['coin_name']);
+                            for (let i = 0; i < resultData[0]['prices']
+                                .length; i++) {
+                                data.setCell(i, coinsGraphDisplay.length,
+                                    resultData[0]['prices'][i]['price']);
+                            }
+                            chart.draw(data, google.charts.Line.convertOptions(options));
+                            coinsGraphDisplay.push(resultData[0]['id']);
+                        }
+                    });
+                }
+            }
+        });
     </script>
-
-
 @endsection
