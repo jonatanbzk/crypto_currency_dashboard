@@ -7,7 +7,6 @@
             <thead>
             <tr>
                 <th>Coin</th>
-                <th></th>
                 <th>Price</th>
                 <th>24h</th>
             </tr>
@@ -16,9 +15,15 @@
             @foreach($coinsName as $coin)
                     <tr>
                         <td>{{$coin->coin_name}}</td>
-                        <td>{{$coin->abbreviation}}</td>
-                        <td>{{$coinsPrice[$loop->index][0]}}</td>
-                        <td>{{$coinsPrice[$loop->index][1]}}</td>
+                        <td>{{$coinsPrice[$loop->index][0]}} €</td>
+
+                        @if($coinsPrice[$loop->index][1] < 0)
+                            <td id="negatif">
+                        @else
+                            <td id="positif">
+                        @endif
+                                {{$coinsPrice[$loop->index][1]}} %
+                            </td>
                     </tr>
             @endforeach
             </tbody>
@@ -26,13 +31,14 @@
     </div>
 
     <div id="line_top_x"></div>
-
+    <div id="blocButtons">
     @foreach($coinsName as $coin)
         @if($coin->id !== 1)
-            <input type='button' value='{{$coin->coin_name}}'
+            <input class="buttonCoin" type='button' value='{{$coin->coin_name}}'
                    id='fetch_{{$coin->id}}'>
         @endif
     @endforeach
+    </div>
 </div>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
